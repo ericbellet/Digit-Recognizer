@@ -1,5 +1,3 @@
-# Digit-Recognizer
-
 # [Digit-Recognizer](https://github.com/ericbellet/Digit-Recognizer)
 
 
