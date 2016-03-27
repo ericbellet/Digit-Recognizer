@@ -156,8 +156,10 @@ model_polynomial = svm(label ~ .,
                        data = training.data,
                        kernel = "polynomial",
                        scale = F,
-                       gamma = 10^(-5),
-                       cost = 10^(-1))
+                       cost = parameters_polynomial$best.model$cost,
+                       degree = parameters_polynomial$best.model$degree,
+                       gamma = parameters_polynomial$best.model$gamma,
+                       coef0 = parameters_polynomial$best.model$coef0)
 #Making confussion matrix
 confusionMatrix_polynomial = table(True = testing.data[,1],
                                    Pred = predict(model_polynomial, testing.data[,-1], type = "class"))
@@ -183,7 +185,7 @@ model_radial = svm(label ~ .,
                    data = training.data,
                    kernel = "radial",
                    scale = F,
-                   gamma = 10^(-5))
+                   gamma = parameters_radial$best.model$gamma)
 
 #Making confussion matrix
 confusionMatrix_radial = table(True = testing.data[,1],
@@ -200,9 +202,9 @@ missRate_radial
 ######################################################################################
 #Calculating best parameters
 #Sigmoid formula: "tanh(gamma*u'*v + coef0)"
-parameters_polynomial = tune.svm(label ~ .,
+parameters_sigmoid = tune.svm(label ~ .,
                                  data = training.data,
-                                 kernel = "polynomial",
+                                 kernel = "sigmoid",
                                  scale = F,
                                  gamma = 10^(-6:-1),
                                  coef0 = (-1:1))
