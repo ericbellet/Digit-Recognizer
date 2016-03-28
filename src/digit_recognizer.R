@@ -32,6 +32,18 @@ sumDiag = function(confusionMatrix)
   
   return(returnValue)
 }
+
+#function made to test the models
+testModel = function(row, dataSet)
+{
+  plotDigit(row, testing.data)
+  write(sprintf("Modelo lineal: %s", as.matrix(predict(model_linear, testing.data[row, -1]))[1][1]), stdout())
+  write(sprintf("Modelo polinómico: %s", as.matrix(predict(model_polynomial, testing.data[row, -1]))[1][1]), stdout())
+  write(sprintf("Modelo radial: %s", as.matrix(predict(model_radial, testing.data[row, -1]))[1][1]), stdout())
+  write(sprintf("Modelo sigmoid: %s", as.matrix(predict(model_sigmoid, testing.data[row, -1]))[1][1]), stdout())
+}
+
+
 ######################################################################################
 #Installing packages depend
 install("e1071")
@@ -225,6 +237,10 @@ missRate_sigmoid = 100 - hitRate_sigmoid
 #Showing rates
 hitRate_sigmoid
 missRate_sigmoid
+######################################################################################
+#Layout to test models
+######################################################################################
+testModel(100, training.data)
 ######################################################################################
 #Making by:
 #Eric Bellet
