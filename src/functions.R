@@ -38,7 +38,19 @@ testModel = function(row, dataSet)
 {
   plotDigit(row, dataSet)
   write(sprintf("Modelo lineal: %s", as.matrix(predict(model_linear, dataSet[row,]))[1][1]), stdout())
-  write(sprintf("Modelo polinómico: %s", as.matrix(predict(model_polynomial, dataSet[row,]))[1][1]), stdout())
+  linear <- as.matrix(predict(model_linear, dataSet[row,]))[1][1]
+  
+  write(sprintf("Modelo polinomico: %s", as.matrix(predict(model_polynomial, dataSet[row,]))[1][1]), stdout())
+  polynomial <- as.matrix(predict(model_polynomial, dataSet[row,]))[1][1]
+  
   write(sprintf("Modelo radial: %s", as.matrix(predict(model_radial, dataSet[row,]))[1][1]), stdout())
+  radial <- as.matrix(predict(model_radial, dataSet[row,]))[1][1]
+  
   write(sprintf("Modelo sigmoid: %s", as.matrix(predict(model_sigmoid, dataSet[row,]))[1][1]), stdout())
+  sigmoid <- as.matrix(predict(model_sigmoid, dataSet[row,]))[1][1]
+  
+  write(sprintf("Segun el esquema de votacion el numero es: %s", names(sort(summary(as.factor(c(linear, polynomial, radial, sigmoid))), decreasing=T)[1])), stdout())
+
+  #return(c(linear, polynomial, radial, sigmoid))
+  
 }

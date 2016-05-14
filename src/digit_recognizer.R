@@ -1,3 +1,8 @@
+####################CAMBIAR###################
+setwd("C:/Users/Eric/Desktop/Digit-Recognizer")
+source("src/functions.r")
+##############################################
+
 ######################################################################################
 #Installing packages depend
 install("e1071")
@@ -8,8 +13,6 @@ library(e1071)
 #Loading data set
 ######################################################################################
 #This line must be change for the locate of your file in your computer
-setwd("C:/Users/deyban.perez/Documents/Repos/Proyecto")
-source("src/functions.r")
 test = read.csv("data/test.csv")
 ######################################################################################
 #Layout to test models
@@ -19,7 +22,9 @@ load(file = "models/model_polynomial.rda")
 load(file = "models/model_radial.rda")
 load(file = "models/model_sigmoid.rda")
 
-testModel(1190, test)
+for (i in 1:3){
+testModel(2, test)
+}
 ######################################################################################
 #Made by:
 #Eric Bellet

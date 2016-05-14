@@ -1,3 +1,9 @@
+####################CAMBIAR###################
+setwd("C:/Users/Eric/Desktop/Digit-Recognizer")
+source("src/functions.r")
+##############################################
+
+
 ######################################################################################
 #Installing packages depend
 install("e1071")
@@ -8,8 +14,6 @@ library(e1071)
 #Loading data set
 ######################################################################################
 #This line must be change for the locate of your file in your computer
-setwd("C:/Users/deyban.perez/Documents/Repos/Proyecto")
-source("src/functions.r")
 train = read.csv("data/train.csv")
 ######################################################################################
 #Making a Sample
