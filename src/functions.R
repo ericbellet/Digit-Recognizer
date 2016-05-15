@@ -1,4 +1,12 @@
 ######################################################################################
+#Installing packages depend
+install("e1071")
+######################################################################################
+#Importing libraries
+library(e1071)
+#Take a rown from data set and plot the digit in a image 28X28 pixels
+
+######################################################################################
 #Declaring functions to be used
 ######################################################################################
 #Install a package, if it is no installed previously

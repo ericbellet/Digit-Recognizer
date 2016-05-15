@@ -18,7 +18,7 @@ runApp(
     ui = fluidPage(theme = shinytheme("cerulean"),
       headerPanel('Digit-Recognizer'),
       sidebarPanel(
-        numericInput("n", "Introduzca la fila del test.csv:", min = 0, value = "Ej: 50"),
+        numericInput("n", "Introduzca la fila del test.csv:", min = 1, max = nrow(test),value = "Ej: 50"),
         br(),
         actionButton("goButton", "RECONOCER DIGITO", style='float:center;padding:20px; font-size:150%'),br(),
         p("Click en el boton para reconocer el digito"),br(),br(),br(),br(),br(),br(),br(),br(),br(),br()
