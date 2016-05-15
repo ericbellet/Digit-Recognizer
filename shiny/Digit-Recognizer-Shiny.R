@@ -1,9 +1,11 @@
 ####################CAMBIAR###################
-setwd("C:/Users/Eric/Desktop/Digit-Recognizer")
+setwd("C:/Users/deyban.perez/Documents/Repos/Digit_Recognizer")
 ##############################################
 source("src/functions.r")
 install("shinythemes")
 install("shiny")
+install("e1071")
+library(e1071)
 library(shinythemes)
 require(shiny)
 
