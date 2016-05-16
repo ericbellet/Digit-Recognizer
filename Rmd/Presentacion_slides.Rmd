@@ -1,0 +1,453 @@
+---
+title: "Reconocedor de Dígitos usando SVM"
+author: "Eric Bellet, Deyban Pérez, Leonardo Santella"
+date: "15 de mayo de 2016"
+output: ioslides_presentation
+---
+
+##Abstract
+El problema de reconocimiento de imágenes ha sido ampliamente estuidiado por la comunidad científica de la computación, elaborar modelos que permitan el reconomiento de imágenes basándose en conocimiento previo es una de las aplicaciones más poderosas en cuanto al área de la **Inteligencia Artificial** se refiere, ya que su uso puede ir desde reconomiento de rostros, placas, etc. Que automaticen y agilicen el procesamiento y reconocimiento de patrones.
+
+##Introducción
+Ente informe contiene la solución elaborada por los integrantes mencionados previamente que cursan la materia de **Minería de Datos** de la **Universidad Central de Venezuela** dictada por el profesor **Fernando Crema** durante el período **02-20015** al problema de reconociento de imágenes colocado en el sitio web de  [kaggle](https://www.kaggle.com/) utilizando como algoritmo de clasificación **Máquina de Soporte Vectorial** (**SVM**) para clasificar entre un conjunto de imágenes que contienen ejemplos de números escritos a mano que varían en el rango de [0,9] perteneciente a los enteros positivos.
+
+El objetivo es crear modelos con los diferentes tipos de kernel provistos por el paquete que proporciona el lenguaje **R** en su paquete **e1071** para realizar SVM, analizarlos, compararlos y generar una aplicación interactiva que sirva como desmostración del trabajo realizado.
+
+##Máquina de Soporte Vectorial (SVM)
+
+Es una técnica de aprendizaje supervisado que funciona tanto para clasificación como para regresión. Este método consiste en la búsqueda de hiperplanos que **maximicen** la distancia de separación entre las diferentes clases presentes mediante la búsqueda de vectores de soporte, la idea es maximizar la distancia de proyección entre la línea fontera y los vectores de soporte presentes en el conjunto de datos.
+
+##Análisis del Problema
+Se tienen imágenes de tamaño **28X28** píxeles, lo que nos da un total de **784 píxeles** que son representado en nuestro **dataset de entrenamiento** por 784 columnas, donde cada columna corresponde a un píxel en el rango **[0,255]** que indica la claridad o la oscuridad del píxel, ya que representa un valor en una escala de grises.
+
+El objetivo principal es usar el algoritmo de aprendizaje supervidado de **Máquina de Soporte Vectorial** para crear modelos (uno por cada kernel provisto por el paquete mencionado anteriormente) y luego compararlos mediante la técnica de evaluación de matriz de evaluación y así evaluar su tasa de acierto y fallo.
+
+##División del problema
+
+El problema lo dividimos en tres (3) secciones:
+
+1. **Preprocesamiento de Parámetros**
+2. **Entrenamiento de los Modelos y Evaluación de Modelos**
+3. **Aplicación Interactiva Shiny**
+
+##Preprocesamiento de Parámetros
+ Dependiendo del kernel seleccionado, se necesitan ajustar ninguno, uno o varios parámetros que ayuden a ajustar el modelo hacia una mejor solución, en esta sección se explicarán las actividades realizadas y los análisis realizados que se usaron para llevar a cabo la preselección de parámetros para entrenar el modelo.
+
+##Entrenamiento de los Modelos y Evaluación de Modelos
+  Se describirá el entrenamiento de los modelos tomando en cuenta los parámetros obtenidos del paso anterior y luego la correspondiente evaluación y comparación entre estos.
+
+##Aplicación Interactiva Shiny
+  Con los modelos entrenados, se creó una aplicación que para una entrada desconocida aplica los modelos entrenados y luego mediante un esquema de votación entre la salida de los modelos se emite el juicio final.
+
+Dicho esto, a continuación empezaremos a describir las distantas secciones mencionadas previamente.
+
+##Definición de Funciones a Utilizar
+
+A continuación se definen las funciones a utilizar a lo largo del documentos:
+
+1. **install**: función que instala un paquete pasado como parámetro si este no se encuentra instalado.
+2. **plotDigit**: función que toma como parámetros la fila y un dataset y genera la gráfica del número en un formato de 28x28 píxeles. 
+3. **sumDiag**: función que toma una matriz de confusión y retorna la suma de la diagonal de dicha matriz de confusión.
+4. **testModel**: función que recibe cómo parámetros un número de fila y un dataset, grafica dicho número y utiliza los diferentes modelos generados para predecir el ejemplo pasado como parámetro. Al final entre los cuatro (4) modelos se hace un esquema de votación y la respuesta que haya tenido mayor cantidad de votos es la salida que se muestra como solución final.
+
+##install
+```{r, echo=TRUE}
+install = function(pkg)
+{
+  # If is is installed does not install packages
+  if (!require(pkg, character.only = TRUE))
+  {
+    install.packages(pkg)
+    if (!require(pkg, character.only = TRUE))
+      stop(paste("load failure:", pkg))
+  }
+}
+```
+
+##plotDigit
+```{r, echo=TRUE}
+plotDigit = function(row, dataSet)
+{
+  image.data = matrix(data.matrix(dataSet[row, 1:ncol(dataSet)]), 28, 28)
+  image.data = t(image.data)
+  image.data = t(image.data)[ ,nrow(image.data):1]
+  image(x = image.data, col = c(0,1))
+}
+```
+
+##sumDiag
+```{r, echo=TRUE}
+sumDiag = function(confusionMatrix)
+{
+  returnValue = 0
+  
+  for (i in (1:nrow(confusionMatrix)))
+    returnValue = returnValue + confusionMatrix[i,i]
+  
+  return(returnValue)
+}
+```
+
+##testModel (Parte #1)
+
+
+```{r, echo=TRUE}
+# testModel = function(row, dataSet)
+# {
+#   plotDigit(row, dataSet)
+#   write(sprintf("Modelo lineal: %s",
+#                 as.matrix(predict(model_linear,
+#                                   dataSet[row,]))[1][1]),stdout())
+#   linear <- as.matrix(predict(model_linear, dataSet[row,]))[1][1]
+#   
+#   write(sprintf("Modelo polinomico: %s",
+#                 as.matrix(predict(model_polynomial,dataSet[row,]))[1][1]),
+#         stdout())
+#   polynomial <- as.matrix(predict(model_polynomial,dataSet[row,]))[1][1]
+#   
+#   write(sprintf("Modelo radial: %s",
+#                 as.matrix(predict(model_radial,dataSet[row,]))[1][1]),
+#         stdout())
+```
+
+##testModel (Parte #2. Final)
+
+```{r}
+#   radial <- as.matrix(predict(model_radial, dataSet[row,]))[1][1]
+#   write(sprintf("Modelo sigmoid: %s",
+#                 as.matrix(predict(model_sigmoid,dataSet[row,]))[1][1]),
+#         stdout())
+#   sigmoid <- as.matrix(predict(model_sigmoid, dataSet[row,]))[1][1]
+#   write(sprintf("Segun el esquema de votacion el numero es: %s",
+#                 names(sort(summary(as.factor(c(linear, polynomial,
+#                                                radial, sigmoid))),decreasing=T)[1])), 
+#         stdout())
+# }
+```
+
+##Instalando y Cargando los Paquetes a Utilizar
+El paquete **e1071** es el único paquete externo que se utilizará.
+
+```{r, echo=TRUE}
+install("e1071")
+library(e1071)
+```
+
+##Preprocesamiento de Parámetros
+Comencemos por cargar nuestro dataset de entrenamiento
+
+```{r, echo=TRUE}
+train = read.csv("../data/train.csv")
+```
+
+##Dimensionalidad
+Veamos las dimensiones del dataset de entrenamiento:
+```{r, echo=TRUE}
+nrow(train)
+ncol(train)
+```
+
+##Forma de los datos
+Podemos ver que hay 45000 ejemplos de entrenamiento, y 785 columnas de la siguiente forma:
+```{r}
+train[1,1:4]
+```
+
+Donde la primera columna se refiere a la etiqueta de la clase y el restante a los 784 píxeles con valores entre [0, 255] que representan la claridad y oscuridad de cada píxel.
+
+##Análisis 
+El asunto es el siguiente, tenemos las siguientes fórmulas de los diferentes tipos de kernel:
+
+* **Linear**: $u'v$
+* **Polynomial**: $(\gamma u^{t} v + coef_{0}) ^{degree}$
+* **Radial**: $e^{-\gamma |u - v|^{2} }$
+* **Sigmoid**: $tanh{(\gamma u' v + coef_{0})}$
+
+Donde **$u$** y **$v$** son vectores que corresponden a los ejemplos y al vector **$theta$** que se usa como margen de separación pra la división de las clases  respectivamente, al multiplicar estos dos vectores se haya la proyección del vector **$v$** sobre el vector **u**. Y **$\gamma$**, **$coef_{0}$**, **$degree$**. Corresponden parámettros que deben ir ajustándose para ir entrenar de la mejor manera a nuestro modelo.
+
+##Análisis
+La pregunta ahora es: ¿Cómo saber que parámetros seleccionar?
+
+Las dimensiones del dataset son muy grandes y verlas de una manera gráfica no nos podrá ayudar de mucho. Debido a esto decidimos hacer uso de la siguiente función **tune.svm()** esta función provista por el paquete **e1071** corre el algoritmo de SVM con diferentes parámetros y retorna los mejores parámetros para posteriormente pasárselos al algoritmo y poder entrenar el modelo.
+
+##Análisis
+El kernel polinómico cuya ecuación es: **$(\gamma u' v + coef0) ^ {degree}$** podemos ver que tiene tres (3) parámetros los cuales se deben ajustar a conveniencia. esto quiere decir que si le pasamos un rango por ejemplo de dos (2) valores a cada uno de ellos supongamos [1,2] para cada uno de ellos, la función deberá entrenar el modelo y hacer las pruebas para **$\gamma = 1$**, **$coef_{0} = 1$**, **degree = 1**, luego para **$\gamma = 1$**, **$coef_{0} = 1$**, **$degree = 2$** y así sucesivamente hasta llegar a: **$\gamma = 2$**, **$coef_{0} = 2$**, **$degree = 2$**. En total se realizarán 6 combinaciones y luego se deberán comparar los distintos modelos y arrojar como salida los parámetros que hicieron que el modelo fuera mejor.
+
+##Análisis
+Teniendo en cuenta que nuestro conjunto de entrenamiento consta de 45000 ejemplos y que el orden del algoritmo SVM es $O(n^{3})$ donde **$n$** es el tamaño del dataset de entrenamiento, podemos darnos cuenta de que el algoritmo con 45000 filas tardará un tiempo entrenando, ahora imagínense si debe hacerlo seis (6) veces sólo para precalcular los parámetros. A simple vista nos podemos dar cuenta de que podrían pasar varios días en el proceso.
+
+Dicho esto para abordar esta problemática, la estrategia utilizada fue hacer un sampling para reducir el número de filas a mil (1000) y utilizar ese número para precalcular los parámetros y luego utilizar dichos parámetros para entrenar los modelos con una mayor cantidad de ejemplos.
+
+
+##Sampling
+```{r, echo=TRUE}
+set.seed(22)
+subIndex = sample(nrow(train), 1000, replace = F)
+training.data = train[subIndex, ]
+```
+
+##Conversión
+Convertimos la columna **label** a tipo **factor** porque si está está en tipo numÃ©rico el algoritmo entonces hará regresión.
+
+```{r, echo=TRUE}
+training.data$label = as.factor(training.data$label)
+```
+
+##Cálculo de parámetros
+
+###Polinómico
+```{r, echo=TRUE}
+#parameters_polynomial = tune.svm(label ~ .,
+#                                 data = training.data,
+#                                 kernel = "polynomial",
+#                                 scale = F,
+#                                 gamma = 10^(-6:-1),
+#                                 cost = 10^(-1:1),
+#                                 degree = (2:4),
+#                                 coef0 = (-1:1))
+
+#parameters_polynomial$best.model
+```
+
+##Cálculo de parámetros
+
+###Radial
+```{r, echo=TRUE}
+#parameters_radial = tune.svm(label ~ .,
+#                             data = training.data,
+#                             kernel = "radial",
+#                             scale = F,
+#                             gamma = 10^(-6:-1))
+
+#parameters_radial$best.model
+```
+
+##Cálculo de parámetros
+
+###Sigmoid
+```{r, echo=TRUE}
+#parameters_sigmoid = tune.svm(label ~ .,
+#                             data = training.data,
+#                              kernel = "sigmoid",
+#                              scale = F,
+#                              gamma = 10^(-6:-1),
+#                              coef0 = (-1:1))
+
+#parameters_sigmoid$best.model
+```
+
+##Almacenamiento de parámetros en disco
+
+Por último salvamos los mejores parámetros para poder utilizarlos a la hora de entrenar los modelos.
+```{r,echo=TRUE}
+#save(parameters_polynomial, file = "parameters/parameters_polynomial.rda")
+#save(parameters_radial, file = "parameters/parameters_radial.rda")
+#save(parameters_sigmoid, file = "parameters/parameters_sigmoid.rda")
+```
+Cabe destacar que para el modelo lineal, no hace falta ajustar ningún parámetro y por eso no se encuentra presente.
+
+##Evaluación de los modelos
+
+A través del entrenamiento de los diferentes modelos, se logró obtener los parametros que utilizamos a la hora de determinar el número contenido en las imágenes del set de datos de prueba. 
+
+Para evaluar el rendimiento de los modelos con los parámetros obtenidos en el entrenamiento, se utilizó el conjunto de datos de prueba, ya que estos contenian el número correspondiente contenido en cada imágen.
+
+##Sampling
+
+El muestreo realizado para evaluar los modelos con los parametros obtenidos del entrenamiento se realizó en el conjunto de entrenamiento con una proporción 80-20, $80%$ subconjunto de entrenamiento y $20%$ subconjunto de prueba.
+
+```{r}
+set.seed(22)
+subIndex = sample(nrow(train), floor(nrow(train) * 0.8), replace = F)
+train = train[subIndex, ]
+training.data = train[subIndex, ]
+testing.data = train[-subIndex, ]
+
+##Número de instancias de prueba
+nrow(testing.data)
+```
+
+##Kernel Líneal
+
+```{r}
+######################################################################################
+#Polynomial Kernel
+######################################################################################
+load(file = "C:/Users/Leonardo/Documents/Data Mining/Digit-Recognizer/models/model_linear.rda")
+##Matriz de confusion
+confusionMatrix_linear = table(True = testing.data[,1],
+                               Pred = predict(model_linear, testing.data[,-1], type = "class"))
+##Tasa de acierto
+hitRate_linear = sumDiag(confusionMatrix_linear) / nrow(testing.data) * 100
+##Tasa de fallo
+missRate_linear = 100 - hitRate_linear
+
+```
+
+##Salida
+
+```{r}
+confusionMatrix_linear
+```
+
+##Salida
+```{r}
+hitRate_linear
+missRate_linear
+```
+
+##Kernel Polinomial
+
+```{r}
+######################################################################################
+#Polynomial kernel
+######################################################################################
+load(file = "C:/Users/Leonardo/Documents/Data Mining/Digit-Recognizer/models/model_polynomial.rda")
+#Matriz de confusion
+confusionMatrix_polynomial = table(True = testing.data[,1],
+                                   Pred = predict(model_polynomial, testing.data[,-1], type = "class"))
+#Tasa de acierto
+hitRate_polynomial = sumDiag(confusionMatrix_polynomial) / nrow(testing.data) * 100
+#Tasa de fallo
+missRate_polynomial = 100 - hitRate_polynomial
+```
+
+##Salida
+
+```{r}
+confusionMatrix_polynomial
+
+```
+
+##Salida
+```{r}
+hitRate_polynomial
+missRate_polynomial
+```
+
+
+##Kernel Radial
+
+```{r}
+######################################################################################
+#Radial Kernel
+######################################################################################
+load(file = "C:/Users/Leonardo/Documents/Data Mining/Digit-Recognizer/models/model_radial.rda")
+#Making confussion matrix
+confusionMatrix_radial = table(True = testing.data[,1],
+                               Pred = predict(model_radial, testing.data[,-1], type = "class"))
+#Tasa de acierto
+hitRate_radial = sumDiag(confusionMatrix_radial) / nrow(testing.data) * 100
+#Tasa de fallo
+missRate_radial = 100 - hitRate_radial
+```
+
+##Salida
+
+```{r}
+confusionMatrix_radial
+```
+
+##Salida
+```{r}
+hitRate_radial
+missRate_radial
+```
+
+##Kernel Sigmoid
+
+```{r}
+######################################################################################
+#Sigmoid Kernel
+######################################################################################
+load(file = "C:/Users/Leonardo/Documents/Data Mining/Digit-Recognizer/models/model_sigmoid.rda")
+#Matriz de confusion
+confusionMatrix_sigmoid = table(True = testing.data[,1],
+                                Pred = predict(model_sigmoid, testing.data[,-1], type = "class"))
+#Tasa de acierto
+hitRate_sigmoid = sumDiag(confusionMatrix_sigmoid) / nrow(testing.data) * 100
+#Tasa de fallo
+missRate_sigmoid = 100 - hitRate_sigmoid
+```
+
+##Salida
+```{r}
+confusionMatrix_sigmoid
+```
+
+##Salida
+```{r}
+hitRate_sigmoid
+missRate_sigmoid
+```
+
+
+##Aplicación interactiva con Shiny
+
+La aplicación que se desarrolló en base a las implementaciones mencionadas anteriormente, básicamente permite que el usuario introduzca un número que indica una fila del dataset **test.csv**, es decir un conjunto de pixeles que representan un número, una vez introducido el digito se presiona el botón **RECONOCER DIGITO** el cual desencadena la ejecución de una serie de funciones que generan como resultado el reconocimiento de la imagen de cada uno de los kernels, **linear**, **polynomial**, **radial** y **sigmoid**.
+
+##Carga de datos
+
+Se carga el *test.csv* y los distintos modelos que se generaron previamente.
+
+```{r eval=FALSE}
+library(shinythemes)
+require(shiny)
+
+#WAITING: LOADING test.csv
+test = read.csv("data/test.csv")
+load(file = "models/model_linear.rda")
+load(file = "models/model_polynomial.rda")
+load(file = "models/model_radial.rda")
+load(file = "models/model_sigmoid.rda")
+```
+
+##Interfaz de usuario
+En la interfaz de usuario los componentes principales son 4, **numericInput** que solicita que se introduzca la fila que se desea, **actionButton** que ejecuta funciones que se encuentran del lado del servidor, **plotOutput** permite la visualización del número que representa la fila introducida y **verbatimTextOutput** muestra los resultados de reconocimiento de los **diferentes kernels** y el resultado del **esquema de votación**.
+
+##Interfaz de usuario
+```{r eval=FALSE, echo=TRUE}
+runApp(
+  list(
+    ui = fluidPage(theme = shinytheme("cerulean"),
+      headerPanel('Digit-Recognizer'),
+      sidebarPanel(
+        numericInput("n", "Introduzca la fila del test.csv:", min = 1, max = nrow(test),value = "Ej: 50"),
+        br(),
+        actionButton("goButton", "RECONOCER DIGITO", style='float:center;padding:20px; font-size:150%'),br(),
+        p("Click en el boton para reconocer el digito"),br(),br(),br(),br(),br(),br(),br(),br(),br(),br()
+      ),
+      mainPanel(
+        plotOutput("plot"),
+        h4('Resultados:'),
+        verbatimTextOutput("nText"))
+      ),
+```
+
+##Servidor
+
+El servidor utiliza 2 funciones, **plotDigit** y **testModel**.
+
+```{r eval=FALSE, echo=TRUE}
+server = function(input, output) { 
+      ntext <- eventReactive(input$goButton, {
+        input$n
+      })
+      output$plot <- renderPlot({
+        n <- ntext()
+        plotDigit(n, test)
+      })
+      output$nText <- renderPrint({
+        n <- as.numeric(ntext())
+        testModel(n, test)
+      })
+    }
+  )
+)
+```
+
+##Acerca de las funciones
+
+La función **plotDigit** permite graficar el número utilizando el conjunto de pixeles de la fila seleccionada.
+
+La función **testModel** muestra el resultado del reconocimiento de la imagen de cada uno de los kernels, y un **esquema de votación** simple que indica cual es el número que representa la figura. Se puede desarrollar un **esquema de votación** más completo asignándole pesos a los modelos. 
