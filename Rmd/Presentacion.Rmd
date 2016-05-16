@@ -242,3 +242,101 @@ Por Ãºltimo salvamos los mejores parÃ¡metros para poder utilizarlos a la hora de
 ```
 
 Cabe destacar que para el modelo lineal, no hace falta ajustar ningÃºn parÃ¡metro y por eso no se encuentra presente.
+
+
+
+#Shiny app
+La aplicación que se desarrolló en base a las implementaciones mencionadas anteriormente, básicamente permite que el usuario introduzca un número que indica una fila del dataset **test.csv**, es decir un conjunto de pixeles que representan un número, una vez introducido el digito se presiona el botón **RECONOCER DIGITO** el cual desencadena la ejecución de una serie de funciones que generan como resultado el reconocimiento de la imagen de cada uno de los kernels, **linear**, **polynomial**, **radial** y **sigmoid**.
+
+##Carga de datos
+Se carga el *test.csv* y los distintos modelos que se generaron previamente.
+```{r eval=FALSE}
+library(shinythemes)
+require(shiny)
+
+#WAITING: LOADING test.csv
+test = read.csv("data/test.csv")
+load(file = "models/model_linear.rda")
+load(file = "models/model_polynomial.rda")
+load(file = "models/model_radial.rda")
+load(file = "models/model_sigmoid.rda")
+```
+##Interfaz de usuario
+En la interfaz de usuario los componentes principales son 4, **numericInput** que solicita que se introduzca la fila que se desea, **actionButton** que ejecuta funciones que se encuentran del lado del servidor, **plotOutput** permite la visualización del número que representa la fila introducida y **verbatimTextOutput** muestra los resultados de reconocimiento de los **diferentes kernels** y el resultado del **esquema de votación**.
+```{r eval=FALSE}
+runApp(
+  list(
+    ui = fluidPage(theme = shinytheme("cerulean"),
+      headerPanel('Digit-Recognizer'),
+      sidebarPanel(
+        numericInput("n", "Introduzca la fila del test.csv:", min = 1, max = nrow(test),value = "Ej: 50"),
+        br(),
+        actionButton("goButton", "RECONOCER DIGITO", style='float:center;padding:20px; font-size:150%'),br(),
+        p("Click en el boton para reconocer el digito"),br(),br(),br(),br(),br(),br(),br(),br(),br(),br()
+      ),
+      mainPanel(
+        plotOutput("plot"),
+        h4('Resultados:'),
+        verbatimTextOutput("nText"))
+        
+      ),
+```
+##Servidor
+El servidor utiliza 2 funciones, **plotDigit** y **testModel**.
+```{r eval=FALSE}
+server = function(input, output) { 
+      ntext <- eventReactive(input$goButton, {
+        input$n
+      })
+      
+      output$plot <- renderPlot({
+        n <- ntext()
+        plotDigit(n, test)
+      })
+      
+      output$nText <- renderPrint({
+        n <- as.numeric(ntext())
+        testModel(n, test)
+        
+      })
+      
+      
+      
+    }
+  )
+)
+```
+La función **plotDigit** permite graficar el número utilizando el conjunto de pixeles de la fila seleccionada.
+```{r eval=FALSE}
+plotDigit = function(row, dataSet)
+{
+  image.data = matrix(data.matrix(dataSet[row, 1:ncol(dataSet)]), 28, 28)
+  image.data = t(image.data)
+  image.data = t(image.data)[ ,nrow(image.data):1]
+  image(x = image.data, col = c(0,1))
+}
+
+```
+La función **testModel** muestra el resultado del reconocimiento de la imagen de cada uno de los kernels, y un **esquema de votación** simple que indica cual es el número que representa la figura. Se puede desarrollar un **esquema de votación** más completo asignándole pesos a los modelos. 
+```{r eval=FALSE}
+testModel = function(row, dataSet)
+{
+  
+  write(sprintf("Modelo lineal: %s", as.matrix(predict(model_linear, dataSet[row,]))[1][1]), stdout())
+  linear <- as.matrix(predict(model_linear, dataSet[row,]))[1][1]
+  
+  write(sprintf("Modelo polinomico: %s", as.matrix(predict(model_polynomial, dataSet[row,]))[1][1]), stdout())
+  polynomial <- as.matrix(predict(model_polynomial, dataSet[row,]))[1][1]
+  
+  write(sprintf("Modelo radial: %s", as.matrix(predict(model_radial, dataSet[row,]))[1][1]), stdout())
+  radial <- as.matrix(predict(model_radial, dataSet[row,]))[1][1]
+  
+  write(sprintf("Modelo sigmoid: %s", as.matrix(predict(model_sigmoid, dataSet[row,]))[1][1]), stdout())
+  sigmoid <- as.matrix(predict(model_sigmoid, dataSet[row,]))[1][1]
+  
+  write(sprintf("Segun el esquema de votacion el numero es: %s", names(sort(summary(as.factor(c(linear, polynomial, radial, sigmoid))), decreasing=T)[1])), stdout())
+
+  #return(c(linear, polynomial, radial, sigmoid))
+  
+}
+```
